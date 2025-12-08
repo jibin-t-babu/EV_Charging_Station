@@ -1,0 +1,28 @@
+{% extends 'main/base.html' %}
+{% block title %}Booking Details | EV PowerHub{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">Booking Details</h2>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+      <h5 class="card-title">{{ booking.station.name }}</h5>
+      <p><strong>Date:</strong> {{ booking.date }}</p>
+      <p><strong>Time Slot:</strong> {{ booking.time_slot }}</p>
+      <p><strong>Status:</strong>
+        {% if booking.status == 'Confirmed' %}
+          <span class="badge bg-success">Confirmed</span>
+        {% else %}
+          <span class="badge bg-secondary">Cancelled</span>
+        {% endif %}
+      </p>
+      <hr>
+      {% if booking.status == 'Confirmed' %}
+        <a href="{% url 'cancel_booking' booking.id %}" class="btn btn-danger me-2">Cancel Booking</a>
+      {% endif %}
+      <a href="{% url 'my_bookings' %}" class="btn btn-secondary">Back</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

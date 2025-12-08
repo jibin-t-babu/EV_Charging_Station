@@ -1,0 +1,197 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EV Charging Stations Near Me | EV PowerHub</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body { background-color: #f5f7fa; }
+    .page-title { text-align: center; font-weight: 600; margin: 30px 0; color: #1a1a1a; }
+    .station-card { border: none; border-radius: 15px; overflow: hidden; transition: all 0.3s ease; background: #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+    .station-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+    .station-header { background: linear-gradient(135deg, #00c853, #009624); color: #fff; padding: 15px; font-size: 1.1rem; font-weight: 600; }
+    .station-body { padding: 16px; }
+    .station-body p { margin: 8px 0; color: #333; }
+    .station-icon { font-size: 1.1rem; color: #009624; margin-right: 8px; }
+    .btn-book { background-color: #00c853; border: none; font-weight: 600; transition: all 0.2s; }
+    .btn-book:hover { background-color: #009624; transform: scale(1.03); }
+  </style>
+  <style>
+    footer {
+      background: #111;
+      color: #bbb;
+      text-align: center;
+      padding: 20px 0;
+      font-size: 14px;
+      margin-top: 50px;
+    }
+
+    footer a {
+      color: #bbb;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    footer a:hover {
+      color: #00e676;
+    }
+  </style>
+</head>
+<body>
+{% include 'main/navbar.html' %}<br><br>
+
+<div class="container">
+  <h2 class="page-title">Nearby EV Charging Stations ⚡</h2>
+
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div id="status" class="text-muted"></div>
+    <button id="nearMeBtn" class="btn btn-sm btn-primary">Stations Near Me</button>
+  </div>
+
+  <div id="map" style="height: 60vh; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);"></div>
+
+  <div class="mt-4">
+    <h5 class="mb-3">Stations List</h5>
+    <div id="stationsList" class="row g-3"></div>
+  </div>
+</div>
+
+{% include 'main/footer.html' %}
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const statusEl = document.getElementById('status');
+  const listEl = document.getElementById('stationsList');
+  const nearMeBtn = document.getElementById('nearMeBtn');
+
+  let map;
+  let userLat = null;
+  let userLon = null;
+  let markersLayer = null;
+
+  function setStatus(msg) { statusEl.textContent = msg; }
+
+  function ensureMap(lat, lon) {
+    if (!map) {
+      map = L.map('map').setView([lat, lon], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+      markersLayer = L.layerGroup().addTo(map);
+    } else {
+      map.setView([lat, lon], 13);
+      markersLayer.clearLayers();
+    }
+  }
+
+  function renderStations(stations) {
+    listEl.innerHTML = '';
+    const bounds = L.latLngBounds();
+    if (userLat && userLon) bounds.extend([userLat, userLon]);
+
+    if (userLat && userLon) {
+      L.marker([userLat, userLon]).addTo(markersLayer).bindPopup('You are here');
+    }
+
+    if (!stations || stations.length === 0) {
+      setStatus('No nearby stations within 20 km.');
+      return;
+    }
+
+    setStatus(`Found ${stations.length} nearby station(s).`);
+
+    stations.forEach(s => {
+      const m = L.marker([s.latitude, s.longitude]).addTo(markersLayer);
+      const directionsUrl = userLat && userLon
+        ? `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLon}&destination=${s.latitude},${s.longitude}`
+        : `https://www.google.com/maps/dir/?api=1&destination=${s.latitude},${s.longitude}`;
+
+      m.bindPopup(`
+        <strong>${s.name}</strong><br/>
+        ${s.location || ''}<br/>
+        Distance: ${s.distance} km<br/>
+        <a href="${directionsUrl}" target="_blank">Directions</a> ·
+        <a href="/book/${s.id}/">Book</a>
+      `);
+
+      bounds.extend([s.latitude, s.longitude]);
+
+      const col = document.createElement('div');
+      col.className = 'col-12 col-md-6';
+      col.innerHTML = `
+        <div class="card station-card">
+          <div class="station-header">${s.name}</div>
+          <div class="station-body">
+            <p><i class="bi bi-geo-alt-fill station-icon"></i><strong>Location:</strong> ${s.location || ''}</p>
+            <p><i class="bi bi-compass station-icon"></i><strong>Distance:</strong> ${s.distance} km</p>
+            <div class="d-flex gap-2">
+              <a class="btn btn-sm btn-outline-primary" href="${directionsUrl}" target="_blank">
+                <i class="bi bi-map"></i> Directions
+              </a>
+              <a class="btn btn-sm btn-book text-white" href="/book/${s.id}/">
+                <i class="bi bi-lightning-charge-fill"></i> Book
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+      listEl.appendChild(col);
+    });
+
+    if (bounds.isValid()) {
+      map.fitBounds(bounds, { padding: [40, 40] });
+    }
+  }
+
+  function loadNearby(lat, lon) {
+    userLat = lat;
+    userLon = lon;
+    ensureMap(lat, lon);
+    setStatus('Loading nearby stations…');
+    fetch(`/nearby-stations/?lat=${lat}&lon=${lon}`)
+      .then(r => r.json())
+      .then(data => renderStations(data.stations || []))
+      .catch(() => setStatus('Failed to load nearby stations.'));
+  }
+
+  nearMeBtn.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+      setStatus('Geolocation is not supported by your browser.');
+      return;
+    }
+    setStatus('Locating…');
+    navigator.geolocation.getCurrentPosition(
+      pos => loadNearby(pos.coords.latitude, pos.coords.longitude),
+      () => {
+        setStatus('Location permission denied. Showing default map.');
+        loadNearby(9.9312, 76.2673);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  });
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => loadNearby(pos.coords.latitude, pos.coords.longitude),
+      () => {
+        setStatus('Location permission denied. Showing default map.');
+        loadNearby(9.9312, 76.2673);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  } else {
+    setStatus('Geolocation is not supported by your browser.');
+    loadNearby(9.9312, 76.2673);
+  }
+</script>
+
+</body>
+</html>
+
+
+

@@ -1,0 +1,43 @@
+{% extends 'main/base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow-lg p-4 rounded-4">
+    <h3 class="fw-bold text-success mb-4"> Charging Summary</h3>
+    <hr>
+    <div class="row">
+      <div class="col-md-6">
+        <p class="mb-3"><strong>Station:</strong> {{ booking.station.name }}</p>
+        <p class="mb-3"><strong>Location:</strong> {{ booking.station.location }}</p>
+        {% if booking.date %}
+        <p class="mb-3"><strong>Date:</strong> {{ booking.date|date:"F d, Y" }}</p>
+        {% endif %}
+        {% if booking.time_slot %}
+        <p class="mb-3"><strong>Time Slot:</strong> {{ booking.time_slot }}</p>
+        {% endif %}
+      </div>
+      <div class="col-md-6">
+        <p class="mb-3"><strong>Energy Used:</strong> 
+          <span class="text-primary fw-bold">
+            {% if booking.energy_used %}{{ booking.energy_used|floatformat:2 }} kWh{% else %}Calculating...{% endif %}
+          </span>
+        </p>
+        <p class="mb-3"><strong>Total Cost:</strong> 
+          <span class="text-success fw-bold fs-5">
+            ₹{{ booking.paid_amount|floatformat:2 }}
+          </span>
+        </p>
+        <p class="mb-3"><strong>Status:</strong> 
+          <span class="badge bg-success">Completed</span>
+        </p>
+        {% if duration %}
+        <p class="mb-3"><strong>Charging Duration:</strong> {{ duration }}</p>
+        {% endif %}
+      </div>
+    </div>
+    <hr>
+    <div class="text-center mt-4">
+      <a href="{% url 'my_bookings' %}" class="btn btn-primary btn-lg">Back to My Bookings</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

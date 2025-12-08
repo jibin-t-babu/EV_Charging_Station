@@ -1,0 +1,29 @@
+{% extends 'main/base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h3 class="fw-bold text-success mb-3">My Vehicles</h3>
+
+  <a href="{% url 'add_vehicle' %}" class="btn btn-success mb-3">+ Add Vehicle</a>
+
+  <table class="table table-bordered">
+    <tr>
+      <th>Vehicle No</th>
+      <th>Name</th>
+      <th>Battery</th>
+      <th>Connector</th>
+    </tr>
+    {% for v in vehicles %}
+    <tr>
+      <td>{{ v.number }}</td>
+      <td>{{ v.name }}</td>
+      <td>{{ v.battery_capacity }} kWh</td>
+      <td>{{ v.connector_type }}</td>
+      <td>
+      <a href="{% url 'delete_vehicle' v.pk %}" class="btn btn-danger btn-sm"
+         onclick="return confirm('Are you sure you want to delete?')">Delete</a></td>
+
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+body {
+  font-family: 'Poppins', sans-serif;
+}
+
+.hero-section {
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+              url('../images/ev-bg.jpg') center/cover no-repeat;
+  height: 90vh;
+}
+
+.btn-success {
+  background-color: #198754 !important;
+  border: none;
+}
+
+.btn-success:hover {
+  background-color: #157347 !important;
+}

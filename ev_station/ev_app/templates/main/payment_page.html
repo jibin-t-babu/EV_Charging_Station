@@ -1,0 +1,17 @@
+{% extends 'main/base.html' %}
+{% block content %}
+<div class="container mt-5 text-center">
+  <div class="card shadow-lg p-4 mx-auto" style="max-width: 500px;">
+    <h3 class="text-success fw-bold mb-3"> EV PowerHub Payment</h3>
+    <p>Station: <strong>{{ booking.station.name }}</strong></p>
+    <p>Date: {{ booking.date }}</p>
+    <p>Amount: <strong>₹{{ payable_amount|floatformat:2 }}</strong></p>
+
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-success w-100 mt-3">Confirm Payment</button>
+      <a href="/my-bookings/" class="btn btn-outline-secondary w-100 mt-2">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
