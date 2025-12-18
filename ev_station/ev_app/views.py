@@ -10,8 +10,7 @@ from django.utils import timezone
 import random
 from django.http import JsonResponse
 from geopy.distance import geodesic
-from .forms import VehicleForm
-from django.http import HttpResponse
+
 # Create your views here.
 @never_cache
 def home(request):
@@ -211,7 +210,6 @@ def charging_progress(request, booking_id):
 def charging_summary(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
 
-    # ✅ DO NOT recalculate if already paid
     if booking.payment_status != "Paid":
 
         if not booking.energy_used:
@@ -222,7 +220,6 @@ def charging_summary(request, booking_id):
 
         booking.save()
 
-    # ✅ Mark charging completed
     if booking.status == "Charging" and booking.charging_progress >= 100:
         booking.status = "Completed"
         if not booking.end_time:
@@ -242,16 +239,16 @@ def charging_summary(request, booking_id):
 def payment_page(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
 
-    # ✅ BLOCK PAYMENT IF CANCELLED
+
     if booking.status == "Cancelled":
         messages.error(request, "This booking was cancelled. Payment is disabled.")
         return redirect("my_bookings")
 
-    # ✅ BLOCK DOUBLE PAYMENT
+
     if booking.payment_status == "Paid":
         return redirect("charging_summary", booking_id=booking.id)
 
-    # ✅ Calculate cost only once
+
     if booking.cost is None:
         if not booking.energy_used:
             booking.energy_used = round(random.uniform(12, 35), 2)
@@ -308,9 +305,6 @@ def notify_admin_new_contact(sender, instance, created, **kwargs):
             message=f" New contact added: {instance.name} - {instance.email}"
         )
 
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from .models import Vehicle
 
 @login_required
 def add_vehicle(request):
@@ -328,7 +322,7 @@ def add_vehicle(request):
             connector_type=connector_type
         )
 
-        return redirect('my_vehicles')   # ✅ redirect after saving
+        return redirect('my_vehicles')  
 
     return render(request, 'main/add_vehicles.html')
 
