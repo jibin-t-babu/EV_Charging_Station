@@ -28,7 +28,6 @@ A Django-based web application for booking and managing EV charging stations.
    python manage.py runserver
 
 ## Screenshots
-(Add screenshots here)
 
 ## Author
 Jibin T Babu
