@@ -1,0 +1,5 @@
+distlib==0.4.0
+filelock==3.20.0
+platformdirs==4.5.0
+python-dotenv==1.2.1
+virtualenv==20.35.3
