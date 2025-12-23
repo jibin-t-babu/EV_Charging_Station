@@ -29,5 +29,18 @@ A Django-based web application for booking and managing EV charging stations.
 
 ## Screenshots
 
+### Login Page
+![Login](screenshots/login.png)
+
+### Slot Booking
+![Slot Booking](screenshots/slot-booking.png)
+
+### Admin Panel
+![Admin Panel](screenshots/admin-panel.png)
+
+### Charging Status
+![Charging Status](screenshots/charging-status.png)
+
+
 ## Author
 Jibin T Babu
