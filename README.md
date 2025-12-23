@@ -30,7 +30,7 @@ A Django-based web application for booking and managing EV charging stations.
 ## Screenshots
 
 ### Login Page
-![Login](screenshots/login.png)
+![Login](ev_station/screenshots/login.png)
 
 ### Slot Booking
 ![Slot Booking](screenshots/slot-booking.png)
